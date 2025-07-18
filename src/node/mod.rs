@@ -2,7 +2,6 @@ use crate::color::Color;
 use crate::NodeId;
 use crate::PixelCoordinate;
 use crate::PixelDimension;
-use ambassador::{delegatable_trait, Delegate};
 use serde::{Deserialize, Serialize};
 
 mod file;
@@ -18,12 +17,12 @@ pub use text::TextNode;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GenericNode {
     pub id: NodeId,
-    x: PixelCoordinate,
-    y: PixelCoordinate,
-    width: PixelDimension,
-    height: PixelDimension,
+    pub x: PixelCoordinate,
+    pub y: PixelCoordinate,
+    pub width: PixelDimension,
+    pub height: PixelDimension,
     #[serde(skip_serializing_if = "Option::is_none")]
-    color: Option<crate::color::Color>,
+    pub color: Option<crate::color::Color>,
 }
 
 impl GenericNode {
@@ -46,54 +45,24 @@ impl GenericNode {
     }
 }
 
-#[delegatable_trait]
-pub trait GenericNodeInfo {
-    fn id(&self) -> &NodeId;
-    fn get_x(&self) -> PixelCoordinate;
-    fn get_y(&self) -> PixelCoordinate;
-    fn get_width(&self) -> PixelDimension;
-    fn get_height(&self) -> PixelDimension;
-    fn color(&self) -> &Option<Color>;
-}
-
-// This must come below the #[delegatable_trait] trait; see
-// https://github.com/hobofan/ambassador/issues/45#issuecomment-1901574140
-pub use ambassador_impl_GenericNodeInfo;
-
-impl GenericNodeInfo for GenericNode {
-    fn id(&self) -> &NodeId {
-        &self.id
-    }
-
-    fn get_x(&self) -> PixelCoordinate {
-        self.x
-    }
-
-    fn get_y(&self) -> PixelCoordinate {
-        self.y
-    }
-
-    fn get_width(&self) -> PixelDimension {
-        self.width
-    }
-
-    fn get_height(&self) -> PixelDimension {
-        self.height
-    }
-
-    fn color(&self) -> &Option<Color> {
-        &self.color
-    }
-}
-
-#[derive(Debug, Delegate, Serialize, Deserialize)]
-#[delegate(GenericNodeInfo)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Node {
     Text(TextNode),
     File(FileNode),
     Link(LinkNode),
     Group(GroupNode),
+}
+
+impl Node {
+    pub fn node(&self) -> &GenericNode {
+        match self {
+            Node::Text(node) => node.node(),
+            Node::File(node) => node.node(),
+            Node::Link(node) => node.node(),
+            Node::Group(node) => node.node(),
+        }
+    }
 }
 
 impl From<GroupNode> for Node {

@@ -3,13 +3,10 @@ use std::path::PathBuf;
 use crate::NodeId;
 use crate::{color::Color, PixelCoordinate, PixelDimension};
 
-use super::ambassador_impl_GenericNodeInfo;
-use super::{GenericNode, GenericNodeInfo};
-use ambassador::Delegate;
+use super::GenericNode;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Delegate, Serialize, Deserialize)]
-#[delegate(GenericNodeInfo, target = "generic")]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FileNode {
     #[serde(flatten)]
     generic: GenericNode,
@@ -39,6 +36,10 @@ impl FileNode {
 
     pub fn file(&self) -> &PathBuf {
         &self.file
+    }
+
+    pub fn node(&self) -> &GenericNode {
+        &self.generic
     }
 
     pub fn subpath(&self) -> Option<&String> {

@@ -1,16 +1,13 @@
 use std::path::PathBuf;
 
-use ambassador::Delegate;
 use serde::{Deserialize, Serialize};
 
 use crate::NodeId;
 use crate::{color::Color, PixelCoordinate, PixelDimension};
 
-use super::ambassador_impl_GenericNodeInfo;
-use super::{GenericNode, GenericNodeInfo};
+use super::GenericNode;
 
-#[derive(Debug, Delegate, Serialize, Deserialize)]
-#[delegate(GenericNodeInfo, target = "generic")]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GroupNode {
     #[serde(flatten)]
     generic: GenericNode,
@@ -38,6 +35,10 @@ impl GroupNode {
             label,
             background,
         }
+    }
+
+    pub fn node(&self) -> &GenericNode {
+        &self.generic
     }
 
     pub fn label(&self) -> Option<&String> {
